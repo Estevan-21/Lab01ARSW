@@ -42,43 +42,46 @@ public class HostBlackListsValidator {
          /* Creo lista de hilos */
         BlackListThread[] hilos=new BlackListThread[n];
         for (int i=0;i<n;i++) {
+            if (i==n-1){
+               hilos[i] = new BlackListThread(count,80000,ipaddress); 
+            }
+            else{
             hilos[i] = new BlackListThread(count,count+rango,ipaddress);
             count=count+rango;
-        }
-        
-        int checkedListsCount=0;
-        /*
-        for (int i=0;i<skds.getRegisteredServersCount() && ocurrencesCount<BLACK_LIST_ALARM_COUNT;i++){
-            checkedListsCount++;
-            
-            if (skds.isInBlackListServer(i, ipaddress)){
-                
-                blackListOcurrences.add(i);
-                
-                ocurrencesCount++;
             }
         }
-        */
+        
+        //Creo el hilo validador, que es el que se encarga de estar mirando si ya se encontó el host
+        //en almenos 5 listas y mata los hilos
+        ValidatorThread validador=new ValidatorThread(hilos,n);
+        validador.start();
+        
+        int checkedListsCount=0;
+        
         
         //Inicio todos los hilos del arreglo
         for (int i=0;i<n;i++) {
             hilos[i].start();            
         }
-        hilos[0].join(10000);
-        //Sumo las listas contadas y ocurrencias encontradas en los hilos
+              
+                
+        //Hago Join al validador para que el proceso principal espere hasta que haya encontrado
+        //el host en 5 listas o hasta que las haya recorrido todas
+        validador.join(); 
+                
+       
+        //Sumo las listas contadas
          for (int i=0;i<n;i++) {
-             checkedListsCount=checkedListsCount+hilos[i].getCountList();
-             ocurrencesCount=ocurrencesCount+hilos[i].getOcurrences();
+             checkedListsCount=checkedListsCount+hilos[i].getCountList();             
         }                 
          
         //Añado las ocurrencias de cada lista de cada hilo a una sola lista
-         for (int i=0;i<n;i++) {
-             LinkedList<Integer> lista=hilos[i].getBlackList();
-             for (int j=0;j<lista.size();j++){
-                 // blackListOcurrences.add(lista[j]);
+         for (int i=0;i<n;i++) {        
+             for (int j=0;j<hilos[i].getBlackList().size();j++){                 
+                 blackListOcurrences.add(hilos[i].getBlackList().get(j));
              }
          }
-        
+         
         if (ocurrencesCount>=BLACK_LIST_ALARM_COUNT){
             skds.reportAsNotTrustworthy(ipaddress);
         }

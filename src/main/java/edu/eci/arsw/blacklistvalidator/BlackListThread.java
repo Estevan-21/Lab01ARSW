@@ -29,9 +29,13 @@ public class BlackListThread extends Thread {
         this.ip=ip;
     }
     
+    
+    /*
+    Hace las búsquedas en las listas y guarda en las variables el respectivo contenido
+    
+    */
     public void run(){        
-        HostBlacklistsDataSourceFacade skds=HostBlacklistsDataSourceFacade.getInstance();      
-        System.out.println(ini+"      "+fin);
+        HostBlacklistsDataSourceFacade skds=HostBlacklistsDataSourceFacade.getInstance();             
         for (int i=ini;i<fin;i++){
             checkedListsCount++;
             
@@ -45,14 +49,24 @@ public class BlackListThread extends Thread {
         }         
     }
     
-    public LinkedList<Integer> getBlackList(){
+    /*
+        Retorna la lista de ocurrencias encontradas
+    */
+    public LinkedList<Integer> getBlackList(){        
         return blackListOcurrences;
     }
     
+    
+    /*
+        Retorna el número de ocurrencias encontradas
+    */
     public int getOcurrences(){        
         return ocurrencesCount;
     }
     
+    /*
+        Retorna el número de listas revisadas
+    */
      public int getCountList(){
         return checkedListsCount;
     }
